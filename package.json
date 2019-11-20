@@ -1,0 +1,41 @@
+{
+  "name": "gendiff_afanasev_7",
+  "version": "1.0.0",
+  "description": "Utility for finding differences in configuration files.",
+  "bin": {
+    "gendiff": "dist/bin/gendiff.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamafansev/frontend-project-lvl2.git"
+  },
+  "keywords": [
+    "generate-difference",
+    "finding differences"
+  ],
+  "author": "OLEG <iamafanasev@gmail.com> (iamafanasev.ru)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iamafansev/frontend-project-lvl2/issues"
+  },
+  "homepage": "https://github.com/iamafansev/frontend-project-lvl2#readme",
+  "dependencies": {
+    "commander": "^4.0.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/node": "^7.7.0",
+    "@babel/preset-env": "^7.7.1",
+    "eslint": "^6.6.0"
+  }
+}

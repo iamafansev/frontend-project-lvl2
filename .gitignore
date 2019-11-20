@@ -1,0 +1,7 @@
+/node_modules/
+*.log
+dist
+.DS_Store
+.package.json.swp
+.gitignore.swp
+.package.json.swo
