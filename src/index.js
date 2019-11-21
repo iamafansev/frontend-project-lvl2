@@ -2,11 +2,13 @@ import fs from 'fs';
 import { resolve } from 'path';
 import _ from 'lodash';
 
+const getData = (pathToFile) => JSON.parse(fs.readFileSync(pathToFile, 'utf-8'));
+
 const genDiff = (pathToFile1, pathToFile2) => {
   const absolutePath1 = resolve(pathToFile1);
   const absolutePath2 = resolve(pathToFile2);
-  const data1 = JSON.parse(fs.readFileSync(absolutePath1, 'utf-8'));
-  const data2 = JSON.parse(fs.readFileSync(absolutePath2, 'utf-8'));
+  const data1 = getData(absolutePath1);
+  const data2 = getData(absolutePath2);
   const keys = _.uniq([...Object.keys(data1), ...Object.keys(data2)]);
 
   const result = keys.reduce((acc, key) => {
