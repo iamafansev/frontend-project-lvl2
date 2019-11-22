@@ -4,7 +4,6 @@ language: node_js
 node_js:
   - node
 
-
 env:
   global:
     - CC_TEST_REPORTER_ID=<3e3fa36281cf47c17ed3cd63f42162290efb928dbd0477b684780609316260d6>
