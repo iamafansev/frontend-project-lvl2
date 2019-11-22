@@ -2,7 +2,10 @@ install:
 	npm install
 
 test:
-	npm run test
+	npm test
+
+test-coverage:
+  npm test -- --coverage
 
 start:
 	npx babel-node src/bin/gendiff.js
