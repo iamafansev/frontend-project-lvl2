@@ -4,18 +4,19 @@ language: node_js
 node_js:
   - node
 
-addons:
-  code_climate:
-    repo_token:
-      secure: "3e3fa36281cf47c17ed3cd63f42162290efb928dbd0477b684780609316260d6"
+
+env:
+  global:
+    - CC_TEST_REPORTER_ID=<3e3fa36281cf47c17ed3cd63f42162290efb928dbd0477b684780609316260d6>
 
 before_script:
-  - npm install codeclimate-test-reporter istanbul -g
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
 script:
-  - istanbul cover npm run test
   - make lint
-  - make test
+  - make test -coverage
 
 after_script:
-  - codeclimate-test-reporter < ./coverage/lcov.info
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT 
