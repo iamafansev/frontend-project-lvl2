@@ -1,14 +1,17 @@
 import fs from 'fs';
-import { resolve } from 'path';
+import path from 'path';
 import _ from 'lodash';
+import parse from './parsers';
 
-const getData = (pathToFile) => JSON.parse(fs.readFileSync(pathToFile, 'utf-8'));
+const getData = (pathToFile) => fs.readFileSync(pathToFile, 'utf-8');
+const getTypeFile = (pathToFile) => path.extname(pathToFile).slice(1);
 
 const genDiff = (pathToFile1, pathToFile2) => {
-  const absolutePath1 = resolve(pathToFile1);
-  const absolutePath2 = resolve(pathToFile2);
-  const data1 = getData(absolutePath1);
-  const data2 = getData(absolutePath2);
+  const absolutePath1 = path.resolve(pathToFile1);
+  const absolutePath2 = path.resolve(pathToFile2);
+
+  const data1 = parse(getTypeFile(absolutePath1), getData(absolutePath1));
+  const data2 = parse(getTypeFile(absolutePath2), getData(absolutePath2));
   const keys = _.uniq([...Object.keys(data1), ...Object.keys(data2)]);
 
   const result = keys.reduce((acc, key) => {
