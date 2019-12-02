@@ -13,8 +13,8 @@ const afterJson = './__fixtures__/after.json';
 const beforeYml = './__fixtures__/before.yml';
 const afterYml = './__fixtures__/after.yml';
 
-// const beforeIni = './__fixtures__/before.ini';
-// const afterIni = './__fixtures__/after.ini';
+const beforeIni = './__fixtures__/before.ini';
+const afterIni = './__fixtures__/after.ini';
 
 const absolutePath1 = resolve(beforeJson);
 const absolutePath2 = resolve(afterJson);
@@ -36,7 +36,7 @@ describe('compar files', () => {
     expect(genDiff(beforeYml, afterYml)).toEqual(result);
   });
 
-  // test('ini compare', () => {
-  //   expect(genDiff(flatIni1, flatIni2)).toEqual(result);
-  // });
+  test('ini compare', () => {
+    expect(genDiff(beforeIni, afterIni)).toEqual(result);
+  });
 });

@@ -69,13 +69,3 @@ const renderDiff = (diff, spaceCount = 2) => {
 
 export default (pathToFile1, pathToFile2) => (
   renderDiff(genDiff(getParseData(pathToFile1), getParseData(pathToFile2))));
-
-// const pathToFile1 = './__fixtures__/before.json';
-// const pathToFile2 = './__fixtures__/after.json';
-
-// const parseData1 = getParseData(pathToFile1);
-// const parseData2 = getParseData(pathToFile2);
-
-
-// const result = renderDiff(genDiff(parseData1, parseData2));
-// console.log(result);
