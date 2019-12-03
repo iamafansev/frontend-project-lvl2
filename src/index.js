@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import parse from './parsers';
+import render from './formaters';
 
 const getData = (pathToFile) => fs.readFileSync(pathToFile, 'utf-8');
 const getTypeFile = (pathToFile) => path.extname(pathToFile).slice(1);
@@ -13,59 +14,51 @@ const getParseData = (pathToFile) => {
   return data;
 };
 
-const genDiff = (data1, data2) => {
-  const keys = _.uniq([...Object.keys(data1), ...Object.keys(data2)]);
+const buildNode = (name, value = '', status = '', root = [], ...children) => (
+  {
+    name,
+    value,
+    status,
+    root,
+    children,
+  }
+);
 
-  const result = keys.reduce((acc, key) => {
+const getDiff = (data1, data2) => {
+  const keys = [...new Set(
+    [...Object.keys(data1), ...Object.keys(data2)],
+  )];
+
+  return keys.reduce((acc, key) => {
     const value1 = data1[key];
     const value2 = data2[key];
 
     if (isChildren(value1) && isChildren(value2)) {
-      return [...acc, [`  ${key}`, genDiff(value1, value2)]];
+      return [...acc, buildNode(key, '', '', [], ...getDiff(value1, value2))];
     }
-
     if (_.has(data1, key) && _.has(data2, key)) {
-      return (value1 === value2) ? [...acc, [`  ${key}`, value1]]
-        : [...acc, [`+ ${key}`, value2], [`- ${key}`, value1]];
+      if (value1 === value2) {
+        return [...acc, buildNode(key, value1, '')];
+      }
+      return [...acc, buildNode(key, value2, 'key added'), buildNode(key, value1, 'key removed')];
     }
 
-    return !_.has(data2, key) ? [...acc, [`- ${key}`, value1]] : [...acc, [`+ ${key}`, value2]];
+    return !_.has(data2, key)
+      ? [...acc, buildNode(key, value1, 'key removed')]
+      : [...acc, buildNode(key, value2, 'key added')];
   }, []);
-
-  return result;
 };
 
-const stringify = (ast, spaceCount, separator = '\n') => {
-  const keys = Object.keys(ast);
-
-  const result = keys.reduce((acc, key) => {
-    const value = ast[key];
-
-    if (value instanceof Object) {
-      return `${acc}${separator}${' '.repeat(spaceCount + 2)}${key}: ${stringify(value, spaceCount + 4)}`;
-    }
-
-    return `${acc}${separator}${' '.repeat(spaceCount + 2)}${key}: ${value}`;
-  }, '');
-
-  return `{${result}${separator}${' '.repeat(spaceCount - 2)}}`;
+const genDiff = (pathToFile1, pathToFile2, format = 'nest') => {
+  const diff = getDiff(getParseData(pathToFile1), getParseData(pathToFile2));
+  return render(format, diff);
 };
 
-const renderDiff = (diff, spaceCount = 2) => {
-  const result = diff.reduce((acc, [key, value]) => {
-    if (Array.isArray(value)) {
-      return `${acc}\n${' '.repeat(spaceCount)}${key}: ${renderDiff(value, spaceCount + 4)}`;
-    }
+export default genDiff;
 
-    if (value instanceof Object) {
-      return `${acc}\n${' '.repeat(spaceCount)}${key}: ${stringify(value, spaceCount + 4)}`;
-    }
+const pathToFile1 = './__fixtures__/before.json';
+const pathToFile2 = './__fixtures__/after.json';
 
-    return `${acc}\n${' '.repeat(spaceCount)}${key}: ${value}`;
-  }, '');
-
-  return `{${result}\n${' '.repeat(spaceCount - 2)}}`;
-};
-
-export default (pathToFile1, pathToFile2) => (
-  renderDiff(genDiff(getParseData(pathToFile1), getParseData(pathToFile2))));
+const result = getDiff(getParseData(pathToFile1), getParseData(pathToFile2));
+// const result = genDiff(pathToFile1, pathToFile2);
+console.log(result);
