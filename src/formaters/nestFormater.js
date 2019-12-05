@@ -14,41 +14,38 @@ const stringify = (ast, spaceCount, separator = '\n') => {
   return `{${result}${separator}${' '.repeat(spaceCount - 2)}}`;
 };
 
-const getChar = (status) => {
-  let result;
-  switch (status) {
-    case 'key added':
-      result = '+';
-      break;
-    case 'key removed':
-      result = '-';
-      break;
-    default:
-      result = ' ';
-  }
+const buildValueString = (name, values, spaceCount) => {
+  const keys = Object.keys(values);
 
-  return result;
+  return keys.map((key) => {
+    if (key === 'unchanged') {
+      if (values[key] instanceof Object) {
+        return `\n${' '.repeat(spaceCount)}  ${name}: ${stringify(values[key], spaceCount + 4)}`;
+      }
+      return `\n${' '.repeat(spaceCount)}  ${name}: ${values[key]}`;
+    }
+
+    if (key === 'added') {
+      if (values[key] instanceof Object) {
+        return `\n${' '.repeat(spaceCount)}+ ${name}: ${stringify(values[key], spaceCount + 4)}`;
+      }
+      return `\n${' '.repeat(spaceCount)}+ ${name}: ${values[key]}`;
+    }
+
+    if (values[key] instanceof Object) {
+      return `\n${' '.repeat(spaceCount)}- ${name}: ${stringify(values[key], spaceCount + 4)}`;
+    }
+    return `\n${' '.repeat(spaceCount)}- ${name}: ${values[key]}`;
+  }).join('');
 };
 
-const renderDiff = (diff, spaceCount = 2) => {
-  const result = diff.reduce((acc, element) => {
-    const {
-      name,
-      value,
-      status,
-      children,
-    } = element;
-
-    const char = getChar(status);
-    if (children.length !== 0) {
-      return `${acc}\n${' '.repeat(spaceCount)}${char} ${name}: ${renderDiff(children, spaceCount + 4)}`;
+const renderDiff = (ast, spaceCount = 2) => {
+  const result = ast.reduce((acc, [key, value]) => {
+    if (value instanceof Array) {
+      return `${acc}\n${' '.repeat(spaceCount)}  ${key}: ${renderDiff(value, spaceCount + 4)}`;
     }
 
-    if (value instanceof Object) {
-      return `${acc}\n${' '.repeat(spaceCount)}${char} ${name}: ${stringify(value, spaceCount + 4)}`;
-    }
-
-    return `${acc}\n${' '.repeat(spaceCount)}${char} ${name}: ${value}`;
+    return `${acc}${buildValueString(key, value, spaceCount)}`;
   }, '');
 
   return `{${result}\n${' '.repeat(spaceCount - 2)}}`;

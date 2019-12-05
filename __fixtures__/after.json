@@ -17,7 +17,6 @@
 			"ops": "vops"
 		}
 	},
-
 	"group1": {
 		"foo": "bar",
 		"baz": "bars",

@@ -14,16 +14,6 @@ const getParseData = (pathToFile) => {
   return data;
 };
 
-const buildNode = (name, value = '', status = '', root = [], ...children) => (
-  {
-    name,
-    value,
-    status,
-    root,
-    children,
-  }
-);
-
 const getDiff = (data1, data2) => {
   const keys = [...new Set(
     [...Object.keys(data1), ...Object.keys(data2)],
@@ -34,18 +24,17 @@ const getDiff = (data1, data2) => {
     const value2 = data2[key];
 
     if (isChildren(value1) && isChildren(value2)) {
-      return [...acc, buildNode(key, '', '', [], ...getDiff(value1, value2))];
+      return [...acc, [key, [...getDiff(value1, value2)]]];
     }
+
     if (_.has(data1, key) && _.has(data2, key)) {
-      if (value1 === value2) {
-        return [...acc, buildNode(key, value1, '')];
-      }
-      return [...acc, buildNode(key, value2, 'key added'), buildNode(key, value1, 'key removed')];
+      return (value1 === value2) ? [...acc, [key, { unchanged: value1 }]]
+        : [...acc, [key, { removed: value1, added: value2 }]];
     }
 
     return !_.has(data2, key)
-      ? [...acc, buildNode(key, value1, 'key removed')]
-      : [...acc, buildNode(key, value2, 'key added')];
+      ? [...acc, [key, { removed: value1 }]]
+      : [...acc, [key, { added: value2 }]];
   }, []);
 };
 
@@ -55,10 +44,3 @@ const genDiff = (pathToFile1, pathToFile2, format = 'nest') => {
 };
 
 export default genDiff;
-
-const pathToFile1 = './__fixtures__/before.json';
-const pathToFile2 = './__fixtures__/after.json';
-
-const result = getDiff(getParseData(pathToFile1), getParseData(pathToFile2));
-// const result = genDiff(pathToFile1, pathToFile2);
-console.log(result);
