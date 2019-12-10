@@ -1,6 +1,6 @@
 {
   "name": "gendiff_afanasev_7",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility for finding differences in configuration files.",
   "bin": {
     "gendiff": "dist/bin/gendiff.js"
