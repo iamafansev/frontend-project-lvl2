@@ -20,7 +20,7 @@ $ make install
 
 **The basic command syntax is as follows:**
 ```sh
-$ gendiff --format plain before.json after.json
+$ gendiff [options] <firstConfig> <secondConfig>
 ```
 
 The absence of plus or minus indicates that the key is in both files and its values coincide. In all other situations, the key was either deleted, added, or changed.
@@ -69,17 +69,16 @@ $ gendiff before.json after.json
 ```sh
 $ gendiff --format plain before.json after.json
 
-Property 'timeout' was updated. From 50 to 20
-Property 'proxy' was removed
-Property 'common.setting4' was removed
-Property 'common.setting5' was removed
-Property 'common.setting2' was added with value: 200
-Property 'common.setting6.ops' was added with value: 'vops'
-Property 'common.sites' was added with value: 'hexlet.io'
-Property 'group1.baz' was updated. From 'bars' to 'bas'
-Property 'group3' was removed
-Property 'verbose' was added with value: true
-Property 'group2' was added with value: [complex value]
+Property common.setting2 was removed
+Property common.setting3 was updated. from true to '[complex value]'
+Property common.setting6.ops was added with value: vops
+Property common.follow was added with value: false
+Property common.setting4 was added with value: blah blah
+Property common.setting5 was added with value: [complex value]
+Property group1.baz was updated. from bas to 'bars'
+Property group1.nest was updated. from [complex value] to 'str'
+Property group2 was removed
+Property group3 was added with value: [complex value]
 ```
 
 ### Comparison files (json format)
