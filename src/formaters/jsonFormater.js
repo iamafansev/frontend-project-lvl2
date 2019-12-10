@@ -2,9 +2,10 @@ import _ from 'lodash';
 
 const getValues = (values) => {
   const keys = Object.keys(values);
-  const beforeValue = Object.values(values)[0];
-  const afterValue = Object.values(values)[1];
-  if (keys.length === 2) {
+  const [key1, key2] = keys;
+  const beforeValue = values[key1];
+  const afterValue = values[key2];
+  if (key1 === 'removed' && key2 === 'added') {
     return {
       beforeValue,
       afterValue,
@@ -16,11 +17,12 @@ const getValues = (values) => {
 
 const getStatus = (values) => {
   const keys = Object.keys(values);
-  if (keys.length === 2) {
+  const [key1, key2] = keys;
+  if (key1 === 'removed' && key2 === 'added') {
     return 'change';
   }
 
-  return keys[0];
+  return key1;
 };
 
 const processValue = (key, value) => {
