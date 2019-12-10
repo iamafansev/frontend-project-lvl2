@@ -15,9 +15,7 @@ const getParseData = (pathToFile) => {
 };
 
 const getDiff = (data1, data2) => {
-  const keys = [...new Set(
-    [...Object.keys(data1), ...Object.keys(data2)],
-  )];
+  const keys = Object.keys({ ...data1, ...data2 });
 
   return keys.reduce((acc, key) => {
     const value1 = data1[key];
