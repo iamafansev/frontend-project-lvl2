@@ -6,13 +6,10 @@ const getValues = (values) => {
   const beforeValue = values[key1];
   const afterValue = values[key2];
   if (key1 === 'removed' && key2 === 'added') {
-    return {
-      beforeValue,
-      afterValue,
-    };
+    return `"beforeValue":${JSON.stringify(beforeValue)},"afterValue":${JSON.stringify(afterValue)}`;
   }
 
-  return { value: beforeValue };
+  return `"value":${JSON.stringify(beforeValue)}`;
 };
 
 const getStatus = (values) => {
@@ -28,12 +25,7 @@ const getStatus = (values) => {
 const processValue = (key, value) => {
   const status = getStatus(value);
   const values = getValues(value);
-
-  return {
-    name: key,
-    status,
-    ...values,
-  };
+  return [`{"name":"${key}","status":"${status}",${values}}`];
 };
 
 const processChildren = (name, values) => {
@@ -42,12 +34,7 @@ const processChildren = (name, values) => {
       ? [...acc, processChildren(key, value)]
       : [...acc, processValue(key, value)]
   ), []);
-
-  return {
-    name,
-    status: 'change',
-    children,
-  };
+  return [`{"name":"${name}","status":"change","children":[${children}]}`];
 };
 
 const propertyActions = [
@@ -66,8 +53,8 @@ const getProcessAction = (arg) => _.find(propertyActions, (({ check }) => check(
 export default (ast) => {
   const result = ast.reduce((acc, [key, value]) => {
     const { process } = getProcessAction(value);
-    return [...acc, process(key, value)];
+    return [...acc, ...process(key, value)];
   }, []);
 
-  return `${JSON.stringify(result)}`;
+  return `[${result.join(',')}]`;
 };
