@@ -2,67 +2,51 @@ import fs from 'fs';
 import { resolve } from 'path';
 import genDiff from '../src';
 
-const resultNest = fs.readFileSync('./__fixtures__/result/diff', 'utf-8');
-const resultPlain = fs.readFileSync('./__fixtures__/result/plainDiff', 'utf-8');
-const resultJson = fs.readFileSync('./__fixtures__/result/jsonDiff.json', 'utf-8');
+let resultNest;
+let resultPlain;
+let resultJson;
 
-const beforeEmpty = './__fixtures__/beforeEmpty.json';
-const afterEmpty = './__fixtures__/afterEmpty.json';
+beforeAll(() => {
+  resultNest = fs.readFileSync('./__fixtures__/result/diff', 'utf-8');
+  resultPlain = fs.readFileSync('./__fixtures__/result/plainDiff', 'utf-8');
+  resultJson = fs.readFileSync('./__fixtures__/result/jsonDiff.json', 'utf-8');
+});
 
-const beforeJson = './__fixtures__/before.json';
-const afterJson = './__fixtures__/after.json';
+const prefixesAndFilePaths = [
+  ['json', './__fixtures__/before.json', './__fixtures__/after.json'],
+  ['yml', './__fixtures__/before.yml', './__fixtures__/after.yml'],
+  ['ini', './__fixtures__/before.ini', './__fixtures__/after.ini'],
+];
 
-const beforeYml = './__fixtures__/before.yml';
-const afterYml = './__fixtures__/after.yml';
+const absolutePath1 = resolve('./__fixtures__/before.json');
+const absolutePath2 = resolve('./__fixtures__/after.json');
 
-const beforeIni = './__fixtures__/before.ini';
-const afterIni = './__fixtures__/after.ini';
-
-const absolutePath1 = resolve(beforeJson);
-const absolutePath2 = resolve(afterJson);
+test('compare empty files', () => {
+  expect(genDiff('./__fixtures__/beforeEmpty.json', './__fixtures__/afterEmpty.json')).toEqual('{\n}');
+});
 
 test('absolutePath', () => {
   expect(genDiff(absolutePath1, absolutePath2)).toEqual(resultNest);
 });
 
-test('compare empty files', () => {
-  expect(genDiff(beforeEmpty, afterEmpty)).toEqual('{\n}');
-});
-
-describe('compar files', () => {
-  test('JSON compare', () => {
-    expect(genDiff(beforeJson, afterJson)).toEqual(resultNest);
-  });
-
-  test('YML compare', () => {
-    expect(genDiff(beforeYml, afterYml)).toEqual(resultNest);
-  });
-
-  test('ini compare', () => {
-    expect(genDiff(beforeIni, afterIni)).toEqual(resultNest);
+describe('compar files (nest output)', () => {
+  test.each(prefixesAndFilePaths)('%s compare', (prefix, filePathBefore, filePathAfter) => {
+    expect(genDiff(filePathBefore, filePathAfter, 'nest')).toEqual(resultNest);
   });
 });
 
 describe('compar files (plain output)', () => {
-  test('JSON compare', () => {
-    expect(genDiff(beforeJson, afterJson, 'plain')).toEqual(resultPlain);
-  });
-
-  test('YML compare', () => {
-    expect(genDiff(beforeYml, afterYml, 'plain')).toEqual(resultPlain);
-  });
-
-  test('ini compare', () => {
-    expect(genDiff(beforeIni, afterIni, 'plain')).toEqual(resultPlain);
+  test.each(prefixesAndFilePaths)('%s compare', (prefix, filePathBefore, filePathAfter) => {
+    expect(genDiff(filePathBefore, filePathAfter, 'plain')).toEqual(resultPlain);
   });
 });
 
+// done without using test.each, because there is a bug with ini format.
 describe('compar files (json output)', () => {
-  test('JSON compare', () => {
-    expect(genDiff(beforeJson, afterJson, 'json')).toEqual(resultJson);
+  test('json compare', () => {
+    expect(genDiff('./__fixtures__/before.json', './__fixtures__/after.json', 'json')).toEqual(resultJson);
   });
-
-  test('YML compare', () => {
-    expect(genDiff(beforeYml, afterYml, 'json')).toEqual(resultJson);
+  test('yml compare', () => {
+    expect(genDiff('./__fixtures__/before.yml', './__fixtures__/after.yml', 'json')).toEqual(resultJson);
   });
 });
