@@ -22,7 +22,7 @@ const absolutePath1 = resolve('./__fixtures__/before.json');
 const absolutePath2 = resolve('./__fixtures__/after.json');
 
 test('compare empty files', () => {
-  expect(genDiff('./__fixtures__/beforeEmpty.json', './__fixtures__/afterEmpty.json')).toEqual('{\n}');
+  expect(genDiff('./__fixtures__/beforeEmpty.json', './__fixtures__/afterEmpty.json')).toEqual('{\n\n}');
 });
 
 test('absolutePath', () => {
