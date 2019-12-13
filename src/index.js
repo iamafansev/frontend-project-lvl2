@@ -22,7 +22,7 @@ const getDiff = (data1, data2) => {
     const value2 = data2[key];
 
     if (isChildren(value1) && isChildren(value2)) {
-      return [key, [...getDiff(value1, value2)]];
+      return [key, getDiff(value1, value2)];
     }
 
     if (_.has(data1, key) && _.has(data2, key)) {
@@ -42,3 +42,8 @@ const genDiff = (pathToFile1, pathToFile2, format = 'nest') => {
 };
 
 export default genDiff;
+
+// const pathToFile1 = './__fixtures__/before.json';
+// const pathToFile2 = './__fixtures__/after.json';
+
+// console.log(genDiff(pathToFile1, pathToFile2, 'json'));
