@@ -42,8 +42,3 @@ const genDiff = (pathToFile1, pathToFile2, format = 'nest') => {
 };
 
 export default genDiff;
-
-// const pathToFile1 = './__fixtures__/before.json';
-// const pathToFile2 = './__fixtures__/after.json';
-
-// console.log(genDiff(pathToFile1, pathToFile2, 'json'));
