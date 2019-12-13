@@ -1,54 +1,56 @@
-const stringify = (ast, spaceCount, separator = '\n') => {
+const tab = '  ';
+
+const stringify = (ast, tabCount) => {
   const keys = Object.keys(ast);
 
   const result = keys.reduce((acc, key) => {
     const value = ast[key];
 
     if (value instanceof Object) {
-      return `${acc}${separator}${' '.repeat(spaceCount + 2)}${key}: ${stringify(value, spaceCount + 4)}`;
+      return `${acc}\n${tab.repeat(tabCount + 1)}${key}: ${stringify(value, tabCount + 2)}`;
     }
 
-    return `${acc}${separator}${' '.repeat(spaceCount + 2)}${key}: ${value}`;
+    return `${acc}\n${tab.repeat(tabCount + 1)}${key}: ${value}`;
   }, '');
 
-  return `{${result}${separator}${' '.repeat(spaceCount - 2)}}`;
+  return `{${result}\n${tab.repeat(tabCount - 1)}}`;
 };
 
-const buildValueString = (name, values, spaceCount) => {
+const buildValueString = (name, values, tabCount) => {
   const keys = Object.keys(values);
 
   return keys.map((key) => {
     if (key === 'unchanged') {
       if (values[key] instanceof Object) {
-        return `\n${' '.repeat(spaceCount)}  ${name}: ${stringify(values[key], spaceCount + 4)}`;
+        return `\n${tab.repeat(tabCount)}  ${name}: ${stringify(values[key], tabCount + 2)}`;
       }
-      return `\n${' '.repeat(spaceCount)}  ${name}: ${values[key]}`;
+      return `\n${tab.repeat(tabCount)}  ${name}: ${values[key]}`;
     }
 
     if (key === 'added') {
       if (values[key] instanceof Object) {
-        return `\n${' '.repeat(spaceCount)}+ ${name}: ${stringify(values[key], spaceCount + 4)}`;
+        return `\n${tab.repeat(tabCount)}+ ${name}: ${stringify(values[key], tabCount + 2)}`;
       }
-      return `\n${' '.repeat(spaceCount)}+ ${name}: ${values[key]}`;
+      return `\n${tab.repeat(tabCount)}+ ${name}: ${values[key]}`;
     }
 
     if (values[key] instanceof Object) {
-      return `\n${' '.repeat(spaceCount)}- ${name}: ${stringify(values[key], spaceCount + 4)}`;
+      return `\n${tab.repeat(tabCount)}- ${name}: ${stringify(values[key], tabCount + 2)}`;
     }
-    return `\n${' '.repeat(spaceCount)}- ${name}: ${values[key]}`;
+    return `\n${tab.repeat(tabCount)}- ${name}: ${values[key]}`;
   }).join('');
 };
 
-const renderDiff = (ast, spaceCount = 2) => {
+const renderDiff = (ast, tabCount = 1) => {
   const result = ast.reduce((acc, [key, value]) => {
     if (value instanceof Array) {
-      return `${acc}\n${' '.repeat(spaceCount)}  ${key}: ${renderDiff(value, spaceCount + 4)}`;
+      return `${acc}\n${tab.repeat(tabCount)}  ${key}: ${renderDiff(value, tabCount + 2)}`;
     }
 
-    return `${acc}${buildValueString(key, value, spaceCount)}`;
+    return `${acc}${buildValueString(key, value, tabCount)}`;
   }, '');
 
-  return `{${result}\n${' '.repeat(spaceCount - 2)}}`;
+  return `{${result}\n${tab.repeat(tabCount - 1)}}`;
 };
 
 export default renderDiff;
