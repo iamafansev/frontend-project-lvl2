@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const getValues = (values) => {
   const keys = Object.keys(values);
   const [key1, key2] = keys;
@@ -29,32 +27,20 @@ const processValue = (key, value) => {
 };
 
 const processChildren = (name, values) => {
-  const children = values.reduce((acc, [key, value]) => (
-    value instanceof Array
-      ? [...acc, processChildren(key, value)]
+  const processedChildren = values.reduce((acc, { key, value, children }) => (
+    children
+      ? [...acc, processChildren(key, children)]
       : [...acc, processValue(key, value)]
   ), []);
-  return [`{"name":"${name}","status":"change","children":[${children}]}`];
+  return [`{"name":"${name}","status":"change","children":[${processedChildren}]}`];
 };
 
-const propertyActions = [
-  {
-    check: (arg) => arg instanceof Array,
-    process: (key, value) => processChildren(key, value),
-  },
-  {
-    check: (arg) => arg instanceof Object,
-    process: (key, value) => processValue(key, value),
-  },
-];
-
-const getProcessAction = (arg) => _.find(propertyActions, (({ check }) => check(arg)));
-
 export default (ast) => {
-  const result = ast.reduce((acc, [key, value]) => {
-    const { process } = getProcessAction(value);
-    return [...acc, ...process(key, value)];
-  }, []);
+  const result = ast.reduce((acc, { key, value, children }) => (
+    children
+      ? [...acc, ...processChildren(key, children)]
+      : [...acc, ...processValue(key, value)]
+  ), []);
 
   return `[${result.join(',')}]`;
 };

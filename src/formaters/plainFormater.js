@@ -19,11 +19,11 @@ const buildValuesString = (values) => {
 };
 
 const processChildren = (elements, root) => elements
-  .filter(([, value]) => !_.has(value, 'unchanged'))
-  .reduce((acc, [key, value]) => {
+  .filter(({ value }) => !_.has(value, 'unchanged'))
+  .reduce((acc, { key, value, children }) => {
     const path = `${root}.${key}`;
-    return value instanceof Array
-      ? [...acc, ...processChildren(value, path)]
+    return children
+      ? [...acc, ...processChildren(children, path)]
       : [...acc, `Property ${path} was ${buildValuesString(value)}`];
   }, []);
 
@@ -31,23 +31,13 @@ const processValue = (value, root) => (
   _.has(value, 'unchanged') ? false : [`Property ${root} was ${buildValuesString(value)}`]
 );
 
-const propertyActions = [
-  {
-    check: (arg) => arg instanceof Array,
-    process: (value, key) => processChildren(value, key),
-  },
-  {
-    check: (arg) => arg instanceof Object,
-    process: (value, key) => processValue(value, key),
-  },
-];
-
-const getProcessAction = (arg) => _.find(propertyActions, (({ check }) => check(arg)));
-
 export default (ast) => {
-  const result = ast.reduce((acc, [key, value]) => {
-    const { process } = getProcessAction(value);
-    return [...acc, ...process(value, key)];
+  const result = ast.reduce((acc, { key, value, children }) => {
+    if (children) {
+      return [...acc, ...processChildren(children, key)];
+    }
+
+    return [...acc, ...processValue(value, key)];
   }, []);
 
   return `${result.join('\n')}`;

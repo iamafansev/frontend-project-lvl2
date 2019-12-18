@@ -53,9 +53,9 @@ const processValue = (name, values, tabCount) => {
 };
 
 const renderDiff = (ast, tabCount = 1) => {
-  const result = ast.reduce((acc, [key, value]) => {
-    if (value instanceof Array) {
-      return [...acc, `${tab.repeat(tabCount)}  ${key}: ${renderDiff(value, tabCount + 2)}`];
+  const result = ast.reduce((acc, { key, value, children }) => {
+    if (children) {
+      return [...acc, `${tab.repeat(tabCount)}  ${key}: ${renderDiff(children, tabCount + 2)}`];
     }
 
     return [...acc, `${processValue(key, value, tabCount)}`];
