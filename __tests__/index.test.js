@@ -1,21 +1,17 @@
 import fs from 'fs';
-import { resolve } from 'path';
+import path from 'path';
 import genDiff from '../src';
 
 let resultNest;
 let resultPlain;
 let resultJson;
 
-const buildPath = (fileName, typePath = 'relative') => {
-  const relativePath = `./__fixtures__/${fileName}`;
-
-  return typePath === 'absolute' ? resolve(relativePath) : relativePath;
-};
+const buildPath = (fileName) => path.join(__dirname, '..', '__fixtures__', fileName);
 
 beforeAll(() => {
-  resultNest = fs.readFileSync('./__fixtures__/result/diff', 'utf-8');
-  resultPlain = fs.readFileSync('./__fixtures__/result/plainDiff', 'utf-8');
-  resultJson = fs.readFileSync('./__fixtures__/result/jsonDiff.json', 'utf-8');
+  resultNest = fs.readFileSync(buildPath('result/diff'), 'utf-8');
+  resultPlain = fs.readFileSync(buildPath('result/plainDiff'), 'utf-8');
+  resultJson = fs.readFileSync(buildPath('result/jsonDiff.json'), 'utf-8');
 });
 
 const prefixesAndFilePaths = ['json', 'yml', 'ini'].map((prefix) => (
@@ -27,13 +23,6 @@ const filePathEmptyFile2 = buildPath('afterEmpty.json');
 
 test('compare empty files', () => {
   expect(genDiff(filePathEmptyFile1, filePathEmptyFile2)).toEqual('{\n\n}');
-});
-
-const absolutePath1 = buildPath('before.json', 'absolute');
-const absolutePath2 = buildPath('after.json', 'absolute');
-
-test('absolutePath', () => {
-  expect(genDiff(absolutePath1, absolutePath2)).toEqual(resultNest);
 });
 
 describe('compar files (nest output)', () => {

@@ -1,45 +1,21 @@
-const getValues = (values) => {
-  const keys = Object.keys(values);
-  const [key1, key2] = keys;
-  const beforeValue = values[key1];
-  const afterValue = values[key2];
-  if (key1 === 'removed' && key2 === 'added') {
-    return `"beforeValue":${JSON.stringify(beforeValue)},"afterValue":${JSON.stringify(afterValue)}`;
-  }
+const processValue = ({ name, type, value }) => (
+  { name, type, value }
+);
 
-  return `"value":${JSON.stringify(beforeValue)}`;
-};
-
-const getStatus = (values) => {
-  const keys = Object.keys(values);
-  const [key1, key2] = keys;
-  if (key1 === 'removed' && key2 === 'added') {
-    return 'change';
-  }
-
-  return key1;
-};
-
-const processValue = (key, value) => {
-  const status = getStatus(value);
-  const values = getValues(value);
-  return [`{"name":"${key}","status":"${status}",${values}}`];
-};
-
-const processChildren = (name, values) => {
-  const processedChildren = values.reduce((acc, { key, value, children }) => (
-    children
-      ? [...acc, processChildren(key, children)]
-      : [...acc, processValue(key, value)]
+const processChildren = (name, children) => {
+  const processedChildren = children.reduce((acc, node) => (
+    node.type === 'nested'
+      ? [...acc, processChildren(node.name, node.children)]
+      : [...acc, processValue(node)]
   ), []);
-  return [`{"name":"${name}","status":"change","children":[${processedChildren}]}`];
+  return { name, type: 'changed', children: processedChildren };
 };
 
 export default (ast) => {
-  const result = ast.reduce((acc, { key, value, children }) => (
-    children
-      ? [...acc, ...processChildren(key, children)]
-      : [...acc, ...processValue(key, value)]
+  const result = ast.reduce((acc, node) => (
+    node.type === 'nested'
+      ? [...acc, JSON.stringify(processChildren(node.name, node.children))]
+      : [...acc, JSON.stringify(processValue(node))]
   ), []);
 
   return `[${result.join(',')}]`;

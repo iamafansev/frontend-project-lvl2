@@ -1,13 +1,21 @@
-import _ from 'lodash';
-
 const tab = '  ';
 
-const buildString = (key, value, tabCount, statusChar = '') => {
-  if (value instanceof Object) {
-    return `${tab.repeat(tabCount)}${statusChar} ${key}: ${stringify(value, tabCount + 2)}`; // eslint-disable-line no-use-before-define
+const processValue = (value, tabCount) => (value instanceof Object
+  ? stringify(value, tabCount + 2) // eslint-disable-line no-use-before-define
+  : value);
+
+const buildString = ({ name, value, type }, tabCount, statusChar = '') => {
+  if (type === 'changed') {
+    const processedOldValue = processValue(value.old, tabCount);
+    const processedNewValue = processValue(value.new, tabCount);
+    const deletedKey = `${tab.repeat(tabCount)}- ${name}: ${processedOldValue}`;
+    const addedKey = `${tab.repeat(tabCount)}+ ${name}: ${processedNewValue}`;
+
+    return `${deletedKey}\n${addedKey}`;
   }
 
-  return `${tab.repeat(tabCount)}${statusChar} ${key}: ${value}`;
+  const processedValue = processValue(value, tabCount);
+  return `${tab.repeat(tabCount)}${statusChar} ${name}: ${processedValue}`;
 };
 
 const stringify = (ast, tabCount) => {
@@ -16,50 +24,26 @@ const stringify = (ast, tabCount) => {
   const result = keys.reduce((acc, key) => {
     const value = ast[key];
 
-    return [...acc, `\n${buildString(key, value, tabCount, ' ')}`];
+    return [...acc, `\n${buildString({ name: key, value }, tabCount, ' ')}`];
   }, []);
 
   return `{${result.join('')}\n${tab.repeat(tabCount - 1)}}`;
 };
 
-const typeActions = [
-  {
-    check: (arg) => arg === 'unchanged',
-    processBuildString: (key, value, tabCount) => buildString(key, value, tabCount, ' '),
-  },
-  {
-    check: (arg) => arg === 'added',
-    processBuildString: (key, value, tabCount) => buildString(key, value, tabCount, '+'),
-  },
-  {
-    check: (arg) => arg === 'removed',
-    processBuildString: (key, value, tabCount) => buildString(key, value, tabCount, '-'),
-  },
-];
-
-const getProcessType = (arg) => _.find(typeActions, (({ check }) => check(arg)));
-
-const processValue = (name, values, tabCount) => {
-  const keys = Object.keys(values);
-
-  const result = keys.map((key) => {
-    const value = values[key];
-    const { processBuildString } = getProcessType(key);
-
-    return processBuildString(name, value, tabCount);
-  });
-
-  return result.join('\n');
+const actionsByType = {
+  nested: ({ name, children }, tabCount, fn) => (
+    `${tab.repeat(tabCount)}  ${name}: ${fn(children, tabCount + 2)}`
+  ),
+  unchanged: (node, tabCount) => buildString(node, tabCount, ' '),
+  changed: (node, tabCount) => buildString(node, tabCount, ' '),
+  deleted: (node, tabCount) => buildString(node, tabCount, '-'),
+  added: (node, tabCount) => buildString(node, tabCount, '+'),
 };
 
 const renderDiff = (ast, tabCount = 1) => {
-  const result = ast.reduce((acc, { key, value, children }) => {
-    if (children) {
-      return [...acc, `${tab.repeat(tabCount)}  ${key}: ${renderDiff(children, tabCount + 2)}`];
-    }
-
-    return [...acc, `${processValue(key, value, tabCount)}`];
-  }, []);
+  const result = ast.reduce((acc, node) => (
+    [...acc, actionsByType[node.type](node, tabCount, renderDiff)]
+  ), []);
 
   return `{\n${result.join('\n')}\n${tab.repeat(tabCount - 1)}}`;
 };

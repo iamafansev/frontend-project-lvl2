@@ -1,44 +1,37 @@
-import _ from 'lodash';
-
-const getCorrectValue = (value) => (
-  value instanceof Object ? '[complex value]' : value
-);
-
-const buildValuesString = (values) => {
-  const [key1, key2] = Object.keys(values);
-
-  if (key1 === 'removed' && key2 === 'added') {
-    return `updated. from ${getCorrectValue(values[key1])} to '${getCorrectValue(values[key2])}'`;
-  }
-
-  if (key1 === 'added') {
-    return `added with value: ${getCorrectValue(values[key1])}`;
-  }
-
-  return 'removed';
+const getCorrectValue = (value) => {
+  const formedValue = typeof value === 'string' ? `'${value}'` : value;
+  return value instanceof Object ? '[complex value]' : formedValue;
 };
 
-const processChildren = (elements, root) => elements
-  .filter(({ value }) => !_.has(value, 'unchanged'))
-  .reduce((acc, { key, value, children }) => {
-    const path = `${root}.${key}`;
-    return children
-      ? [...acc, ...processChildren(children, path)]
-      : [...acc, `Property ${path} was ${buildValuesString(value)}`];
-  }, []);
+const actionsByType = {
+  unchanged: (value) => `updated. From ${getCorrectValue(value.old)} to ${getCorrectValue(value.new)}`,
+  changed: (value) => `updated. From ${getCorrectValue(value.old)} to ${getCorrectValue(value.new)}`,
+  deleted: () => 'removed',
+  added: (value) => `added with value: ${getCorrectValue(value)}`,
+};
 
-const processValue = (value, root) => (
-  _.has(value, 'unchanged') ? false : [`Property ${root} was ${buildValuesString(value)}`]
+const processValue = (path, { type, value }) => (
+  `Property ${path} was ${actionsByType[type](value)}`
 );
 
-export default (ast) => {
-  const result = ast.reduce((acc, { key, value, children }) => {
-    if (children) {
-      return [...acc, ...processChildren(children, key)];
-    }
+const processChildren = (elements, root) => elements
+  .filter(({ type }) => type !== 'unchanged')
+  .reduce((acc, node) => {
+    const path = `${root}.${node.name}`;
+    return node.type === 'nested'
+      ? [...acc, ...processChildren(node.children, path)]
+      : [...acc, processValue(path, node)];
+  }, []);
 
-    return [...acc, ...processValue(value, key)];
+const renderDiff = (ast) => {
+  const result = ast.reduce((acc, node) => {
+    const path = node.name;
+    return node.type === 'nested'
+      ? [...acc, ...processChildren(node.children, path)]
+      : [...acc, processValue(path, node)];
   }, []);
 
   return `${result.join('\n')}`;
 };
+
+export default renderDiff;
