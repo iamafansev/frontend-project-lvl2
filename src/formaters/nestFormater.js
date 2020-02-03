@@ -4,18 +4,18 @@ const processValue = (value, tabCount) => (value instanceof Object
   ? stringify(value, tabCount + 2) // eslint-disable-line no-use-before-define
   : value);
 
-const buildString = ({ name, value, type }, tabCount, statusChar = '') => {
+const buildString = ({ key, value, type }, tabCount, statusChar = '') => {
   if (type === 'changed') {
     const processedOldValue = processValue(value.old, tabCount);
     const processedNewValue = processValue(value.new, tabCount);
-    const deletedKey = `${tab.repeat(tabCount)}- ${name}: ${processedOldValue}`;
-    const addedKey = `${tab.repeat(tabCount)}+ ${name}: ${processedNewValue}`;
+    const deletedKey = `${tab.repeat(tabCount)}- ${key}: ${processedOldValue}`;
+    const addedKey = `${tab.repeat(tabCount)}+ ${key}: ${processedNewValue}`;
 
     return `${deletedKey}\n${addedKey}`;
   }
 
   const processedValue = processValue(value, tabCount);
-  return `${tab.repeat(tabCount)}${statusChar} ${name}: ${processedValue}`;
+  return `${tab.repeat(tabCount)}${statusChar} ${key}: ${processedValue}`;
 };
 
 const stringify = (ast, tabCount) => {
@@ -24,15 +24,15 @@ const stringify = (ast, tabCount) => {
   const result = keys.reduce((acc, key) => {
     const value = ast[key];
 
-    return [...acc, `\n${buildString({ name: key, value }, tabCount, ' ')}`];
+    return [...acc, `\n${buildString({ key, value }, tabCount, ' ')}`];
   }, []);
 
   return `{${result.join('')}\n${tab.repeat(tabCount - 1)}}`;
 };
 
 const actionsByType = {
-  nested: ({ name, children }, tabCount, fn) => (
-    `${tab.repeat(tabCount)}  ${name}: ${fn(children, tabCount + 2)}`
+  nested: ({ key, children }, tabCount, fn) => (
+    `${tab.repeat(tabCount)}  ${key}: ${fn(children, tabCount + 2)}`
   ),
   unchanged: (node, tabCount) => buildString(node, tabCount, ' '),
   changed: (node, tabCount) => buildString(node, tabCount, ' '),

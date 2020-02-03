@@ -13,49 +13,27 @@ const getParsedData = (pathToFile) => {
   return data;
 };
 
-const keyTypes = [
-  {
-    type: 'nested',
-    check: (first, second, key) => (
-      (first[key] instanceof Object && second[key] instanceof Object)
-      && !(first[key] instanceof Array && second[key] instanceof Array)
-    ),
-    process: (first, second, fn) => fn(first, second),
-  },
-  {
-    type: 'unchanged',
-    check: (first, second, key) => (
-      _.has(first, key) && _.has(second, key) && (first[key] === second[key])
-    ),
-    process: (first) => _.identity(first),
-  },
-  {
-    type: 'changed',
-    check: (first, second, key) => (
-      _.has(first, key) && _.has(second, key) && (first[key] !== second[key])
-    ),
-    process: (first, second) => ({ old: first, new: second }),
-  },
-  {
-    type: 'deleted',
-    check: (first, second, key) => (_.has(first, key) && !_.has(second, key)),
-    process: (first) => _.identity(first),
-  },
-  {
-    type: 'added',
-    check: (first, second, key) => (!_.has(first, key) && _.has(second, key)),
-    process: (first, second) => _.identity(second),
-  },
-];
-
 const getAst = (data1, data2) => {
   const keys = _.union(Object.keys(data1), Object.keys(data2));
 
   return keys.map((key) => {
-    const { type, process } = _.find(keyTypes, ({ check }) => check(data1, data2, key));
-    const result = process(data1[key], data2[key], getAst);
-    const valueOrChildren = type === 'nested' ? 'children' : 'value';
-    return { name: key, type, [valueOrChildren]: result };
+    if (data1[key] instanceof Object && data2[key] instanceof Object) {
+      return { key, type: 'nested', children: getAst(data1[key], data2[key]) };
+    }
+
+    if (_.has(data1, key) && _.has(data2, key) && (data1[key] === data2[key])) {
+      return { key, type: 'unchanged', value: data1[key] };
+    }
+
+    if (_.has(data1, key) && _.has(data2, key) && (data1[key] !== data2[key])) {
+      return { key, type: 'changed', value: { old: data1[key], new: data2[key] } };
+    }
+
+    if (_.has(data1, key) && !_.has(data2, key)) {
+      return { key, type: 'deleted', value: data1[key] };
+    }
+
+    return { key, type: 'added', value: data2[key] };
   });
 };
 

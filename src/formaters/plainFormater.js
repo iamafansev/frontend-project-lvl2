@@ -17,7 +17,7 @@ const processValue = (path, { type, value }) => (
 const processChildren = (elements, root) => elements
   .filter(({ type }) => type !== 'unchanged')
   .reduce((acc, node) => {
-    const path = `${root}.${node.name}`;
+    const path = `${root}.${node.key}`;
     return node.type === 'nested'
       ? [...acc, ...processChildren(node.children, path)]
       : [...acc, processValue(path, node)];
@@ -25,7 +25,7 @@ const processChildren = (elements, root) => elements
 
 const renderDiff = (ast) => {
   const result = ast.reduce((acc, node) => {
-    const path = node.name;
+    const path = node.key;
     return node.type === 'nested'
       ? [...acc, ...processChildren(node.children, path)]
       : [...acc, processValue(path, node)];
