@@ -3,33 +3,34 @@ const getCorrectValue = (value) => {
   return value instanceof Object ? '[complex value]' : formedValue;
 };
 
-const actionsByType = {
-  unchanged: (value) => `updated. From ${getCorrectValue(value.old)} to ${getCorrectValue(value.new)}`,
-  changed: (value) => `updated. From ${getCorrectValue(value.old)} to ${getCorrectValue(value.new)}`,
-  deleted: () => 'removed',
-  added: (value) => `added with value: ${getCorrectValue(value)}`,
+const processValue = (node, path) => {
+  const beginningLine = `Property ${path} was`;
+
+  if (node.type === 'changed') {
+    return `${beginningLine} updated. From ${getCorrectValue(node.oldValue)} to ${getCorrectValue(node.newValue)}`;
+  }
+
+  if (node.type === 'added') {
+    return `${beginningLine} added with value: ${getCorrectValue(node.value)}`;
+  }
+
+  return `${beginningLine} removed`;
 };
 
-const processValue = (path, { type, value }) => (
-  `Property ${path} was ${actionsByType[type](value)}`
-);
+const actionsByType = {
+  nested: ({ children }, path, fn) => fn(children, path),
+  changed: (node, path) => processValue(node, path),
+  deleted: (node, path) => processValue(node, path),
+  added: (node, path) => processValue(node, path),
+};
 
-const processChildren = (elements, root) => elements
-  .filter(({ type }) => type !== 'unchanged')
-  .reduce((acc, node) => {
-    const path = `${root}.${node.key}`;
-    return node.type === 'nested'
-      ? [...acc, ...processChildren(node.children, path)]
-      : [...acc, processValue(path, node)];
-  }, []);
-
-const renderDiff = (ast) => {
-  const result = ast.reduce((acc, node) => {
-    const path = node.key;
-    return node.type === 'nested'
-      ? [...acc, ...processChildren(node.children, path)]
-      : [...acc, processValue(path, node)];
-  }, []);
+const renderDiff = (ast, root = '') => {
+  const result = ast
+    .filter(({ type }) => type !== 'unchanged')
+    .reduce((acc, node) => {
+      const path = (root === '') ? node.key : `${root}.${node.key}`;
+      return [...acc, actionsByType[node.type](node, path, renderDiff)];
+    }, []);
 
   return `${result.join('\n')}`;
 };
