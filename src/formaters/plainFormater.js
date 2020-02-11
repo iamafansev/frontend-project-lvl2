@@ -3,19 +3,19 @@ const getCorrectValue = (value) => {
   return value instanceof Object ? '[complex value]' : formedValue;
 };
 
-const getBeginningLine = (path) => `Property ${path} was`;
+const buildBeginningLine = (path) => `Property ${path} was`;
 
 const processChangedNode = (node, path) => {
   const endOfLine = `${getCorrectValue(node.oldValue)} to ${getCorrectValue(node.newValue)}`;
-  return `${getBeginningLine(path)} updated. From ${endOfLine}`;
+  return `${buildBeginningLine(path)} updated. From ${endOfLine}`;
 };
 
 const processAddedNode = (node, path) => {
   const endOfLine = getCorrectValue(node.value);
-  return `${getBeginningLine(path)} added with value: ${endOfLine}`;
+  return `${buildBeginningLine(path)} added with value: ${endOfLine}`;
 };
 
-const processDeletedNode = (node, path) => `${getBeginningLine(path)} removed`;
+const processDeletedNode = (node, path) => `${buildBeginningLine(path)} removed`;
 
 const actionsByType = {
   nested: ({ children }, path, fn) => fn(children, path),
