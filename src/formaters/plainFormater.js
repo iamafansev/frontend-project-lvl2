@@ -3,25 +3,25 @@ const getCorrectValue = (value) => {
   return value instanceof Object ? '[complex value]' : formedValue;
 };
 
-const processValue = (node, path) => {
-  const beginningLine = `Property ${path} was`;
+const getBeginningLine = (path) => `Property ${path} was`;
 
-  if (node.type === 'changed') {
-    return `${beginningLine} updated. From ${getCorrectValue(node.oldValue)} to ${getCorrectValue(node.newValue)}`;
-  }
-
-  if (node.type === 'added') {
-    return `${beginningLine} added with value: ${getCorrectValue(node.value)}`;
-  }
-
-  return `${beginningLine} removed`;
+const processChangedNode = (node, path) => {
+  const endOfLine = `${getCorrectValue(node.oldValue)} to ${getCorrectValue(node.newValue)}`;
+  return `${getBeginningLine(path)} updated. From ${endOfLine}`;
 };
+
+const processAddedNode = (node, path) => {
+  const endOfLine = getCorrectValue(node.value);
+  return `${getBeginningLine(path)} added with value: ${endOfLine}`;
+};
+
+const processDeletedNode = (node, path) => `${getBeginningLine(path)} removed`;
 
 const actionsByType = {
   nested: ({ children }, path, fn) => fn(children, path),
-  changed: (node, path) => processValue(node, path),
-  deleted: (node, path) => processValue(node, path),
-  added: (node, path) => processValue(node, path),
+  changed: (node, path) => processChangedNode(node, path),
+  deleted: (node, path) => processDeletedNode(node, path),
+  added: (node, path) => processAddedNode(node, path),
 };
 
 const renderDiff = (ast, root = '') => {
