@@ -1,17 +1,17 @@
 const tab = '  ';
 
-const getCorrectValue = (value, tabCount) => (value instanceof Object
+const mappingValue = (value, tabCount) => (value instanceof Object
   ? stringify(value, tabCount + 2) // eslint-disable-line no-use-before-define
   : value);
 
 const buildString = ({ key, value }, tabCount, statusChar = '') => {
-  const processedValue = getCorrectValue(value, tabCount);
-  return `${tab.repeat(tabCount)}${statusChar} ${key}: ${processedValue}`;
+  const mappedValue = mappingValue(value, tabCount);
+  return `${tab.repeat(tabCount)}${statusChar} ${key}: ${mappedValue}`;
 };
 
 const buildStringChangedNode = ({ key, oldValue, newValue }, tabCount) => {
-  const processedOldValue = getCorrectValue(oldValue, tabCount);
-  const processedNewValue = getCorrectValue(newValue, tabCount);
+  const processedOldValue = mappingValue(oldValue, tabCount);
+  const processedNewValue = mappingValue(newValue, tabCount);
   const deletedKey = `${tab.repeat(tabCount)}- ${key}: ${processedOldValue}`;
   const addedKey = `${tab.repeat(tabCount)}+ ${key}: ${processedNewValue}`;
 
